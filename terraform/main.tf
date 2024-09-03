@@ -68,7 +68,3 @@ resource "aws_eks_cluster" "flask_eks" {
   ]
 }
 
-# Output the ECR repository URL
-output "ecr_repo_url" {
-  value = aws_ecr_repository.flask_app[0].repository_url
-}
