@@ -57,15 +57,15 @@ resource "aws_iam_role" "flask_eks_role" {
 
 # Attach EKS Cluster Policy to the Role
 resource "aws_iam_role_policy_attachment" "flask_eks_policy" {
-  count      = aws_iam_role.flask_eks_role.count
-  role       = aws_iam_role.flask_eks_role.name
+  count      = length(aws_iam_role.flask_eks_role) == 0 ? 0 : 1
+  role       = aws_iam_role.flask_eks_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
 
 # Create an EKS Cluster
 resource "aws_eks_cluster" "flask_eks" {
   name     = "flask-eks-cluster"
-  role_arn = aws_iam_role.flask_eks_role.arn
+  role_arn = aws_iam_role.flask_eks_role[0].arn
 
   vpc_config {
     subnet_ids = [
@@ -77,4 +77,9 @@ resource "aws_eks_cluster" "flask_eks" {
   depends_on = [
     aws_iam_role_policy_attachment.flask_eks_policy
   ]
+}
+
+# Output the ECR repository URL
+output "ecr_repo_url" {
+  value = aws_ecr_repository.flask_app[0].repository_url
 }
