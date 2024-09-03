@@ -78,8 +78,3 @@ resource "aws_eks_cluster" "flask_eks" {
     aws_iam_role_policy_attachment.flask_eks_policy
   ]
 }
-
-# Output the ECR repository URL
-output "ecr_repo_url" {
-  value = aws_ecr_repository.flask_app[0].repository_url
-}
