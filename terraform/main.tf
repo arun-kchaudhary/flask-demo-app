@@ -3,14 +3,9 @@ provider "aws" {
   region = "ap-south-1"
 }
 
-# Data source to check if the ECR repository already exists
-data "aws_ecr_repository" "existing_repo" {
-  name = "flask-demo-app"
-}
-
-# Conditional creation of the ECR repository
+# Create an ECR Repository
 resource "aws_ecr_repository" "flask_app" {
-  count = length(data.aws_ecr_repository.existing_repo.repository_url) == 0 ? 1 : 0
+  count = 1  # Always create this resource
   name  = "flask-demo-app"
 }
 
@@ -33,14 +28,9 @@ resource "aws_subnet" "subnet_b" {
   availability_zone = "ap-south-1b"
 }
 
-# Data source to check if the IAM role already exists
-data "aws_iam_role" "existing_role" {
-  name = "flask-eks-role"
-}
-
-# Conditional creation of the IAM role for EKS
+# Create an IAM Role for EKS
 resource "aws_iam_role" "flask_eks_role" {
-  count = length(data.aws_iam_role.existing_role.name) == 0 ? 1 : 0
+  count = 1  # Always create this resource
   name  = "flask-eks-role"
 
   assume_role_policy = jsonencode({
@@ -57,7 +47,6 @@ resource "aws_iam_role" "flask_eks_role" {
 
 # Attach EKS Cluster Policy to the Role
 resource "aws_iam_role_policy_attachment" "flask_eks_policy" {
-  count      = length(aws_iam_role.flask_eks_role) == 0 ? 0 : 1
   role       = aws_iam_role.flask_eks_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
@@ -77,4 +66,9 @@ resource "aws_eks_cluster" "flask_eks" {
   depends_on = [
     aws_iam_role_policy_attachment.flask_eks_policy
   ]
+}
+
+# Output the ECR repository URL
+output "ecr_repo_url" {
+  value = aws_ecr_repository.flask_app[0].repository_url
 }
